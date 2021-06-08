@@ -9,7 +9,7 @@ PARAMS_URL = "https://drive.google.com/uc?id=1uRmyJfs5OW2s0USoue6WbPdr_04MNOFI"
 
 
 def resnet26(config, num_classes):
-    net = ResNet(3*[4], num_classes, pre_relu=True, ra=config.ra)
+    net = ResNet(3*[4], num_classes, pre_relu=True, ra=config.model == "adra")
     
     if not os.path.isfile(config.params_path):
         gdown.download(PARAMS_URL, config.params_path, quiet=False)
@@ -23,10 +23,10 @@ def resnet26(config, num_classes):
     q = net.load_state_dict(state_dict_pretrained, strict=False)
 
     assert len(q.unexpected_keys) == 0
-    m_keys = ["linears", "pre_ra", "ra1", "ra2"] if config.ra else ["linears"]
+    m_keys = ["linears", "pre_ra", "ra1", "ra2"] if config.model == "adra" else ["linears"]
     assert all(any(k in key for k in m_keys) for key in q.missing_keys)
 
-    if config.ra:
+    if config.model == "adra":
         for _, m in net.named_modules():
             if isinstance(m, torch.nn.Conv2d) and (m.kernel_size[0] == 3):
                 m.weight.requires_grad = False  # Fix 3x3 convolutions

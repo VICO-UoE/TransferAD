@@ -37,7 +37,7 @@ def main():
     f = resnet26(config, 1)
     f.cuda()
 
-    if config.l2sp:
+    if config.model == "adib":
         theta_0 = f.params()
     
     loss = nn.BCEWithLogitsLoss()    
@@ -72,7 +72,7 @@ def main():
             logits = f(x).squeeze()
             l = loss(logits, semi_targets.float())
 
-            if config.l2sp:
+            if config.model == "adib":
                 l += config.alpha * torch.norm(f.params(backprop=True) - theta_0, 2)
 
             l.backward()
